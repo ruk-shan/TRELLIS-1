@@ -286,8 +286,8 @@ with gr.Blocks(
 
 
 if __name__ == "__main__":
-    print("Loading TRELLIS-image-large pipeline (first run downloads ~5GB)...")
-    pipeline = TrellisImageTo3DPipeline.from_pretrained("microsoft/TRELLIS-image-large")
+    print("Loading TRELLIS-image-large pipeline from models_weights/...")
+    pipeline = TrellisImageTo3DPipeline.from_pretrained("models_weights/TRELLIS-image-large")
     pipeline.cuda()
     print("Pipeline ready.")
     demo.launch(server_name="0.0.0.0", server_port=7860, share=False)

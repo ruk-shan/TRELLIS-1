@@ -54,8 +54,8 @@ def main():
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print("Loading TRELLIS-image-large pipeline (downloads ~5GB on first run)...")
-    pipeline = TrellisImageTo3DPipeline.from_pretrained("microsoft/TRELLIS-image-large")
+    print("Loading TRELLIS-image-large pipeline from models_weights/...")
+    pipeline = TrellisImageTo3DPipeline.from_pretrained("models_weights/TRELLIS-image-large")
     pipeline.cuda()
 
     print(f"Running multi-image pipeline (mode={args.mode}, seed={args.seed})...")
