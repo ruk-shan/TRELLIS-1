@@ -10,8 +10,12 @@ Model weights are expected at [models_weights/TRELLIS-image-large/](models_weigh
 
 ### Web demos (Gradio)
 
+- Multi-image → uv run multi_image_app.py
 - Single-image → 3D: `python app.py` — see [app.py](app.py)
-- Multi-image → 3D: `python multi_image_app.py` — see [multi_image_app.py](multi_image_app.py)
+
+
+
+[multi_image_app.py](multi_image_app.py)
 
 Open the URL printed in the terminal.
 
