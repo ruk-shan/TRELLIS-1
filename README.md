@@ -1,3 +1,45 @@
+## How to run
+
+Activate the local virtualenv before running anything:
+
+```sh
+source .venv/bin/activate
+```
+
+Model weights are expected at [models_weights/TRELLIS-image-large/](models_weights/TRELLIS-image-large/). All entry points use the `xformers` attention backend and the `native` spconv algorithm (set automatically inside each script).
+
+### Web demos (Gradio)
+
+- Single-image → 3D: `python app.py` — see [app.py](app.py)
+- Multi-image → 3D: `python multi_image_app.py` — see [multi_image_app.py](multi_image_app.py)
+
+Open the URL printed in the terminal.
+
+### Scripts
+
+- Minimal single-image example: `python example.py` — see [example.py](example.py)
+- Minimal multi-image example: `python example_multi_image.py` — see [example_multi_image.py](example_multi_image.py)
+
+### CLI: folder of multi-view images → textured GLB
+
+[generate_glb.py](generate_glb.py) takes a folder of images of one object and writes a `.glb` next to it.
+
+```sh
+python generate_glb.py input/screw_A
+# → input/screw_A.glb
+
+# Optional flags
+python generate_glb.py input/screw_A \
+  -o output/screw_A.glb \
+  --seed 1 \
+  --texture-size 1024 \
+  --preview          # also writes an .mp4 preview render
+```
+
+Run `python generate_glb.py --help` for the full list of flags (sampler steps, CFG strength, mesh simplification ratio, mode).
+
+---
+
 <img src="assets/logo.webp" width="100%" align="center">
 <h1 align="center">Structured 3D Latents<br>for Scalable and Versatile 3D Generation</h1>
 <p align="center"><a href="https://arxiv.org/abs/2412.01506"><img src='https://img.shields.io/badge/arXiv-Paper-red?logo=arxiv&logoColor=white' alt='arXiv'></a>
