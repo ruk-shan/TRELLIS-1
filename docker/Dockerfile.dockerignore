@@ -1,0 +1,31 @@
+# VCS / IDE
+.git
+.github
+.vscode
+.idea
+
+# Local Python envs / caches
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Heavy artifacts — mount these at runtime instead of baking them in.
+models_weights
+output
+tmp
+tmp_multi
+*.glb
+*.mp4
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Don't recurse into the Dockerfile / ignore file itself
+Dockerfile
+.dockerignore
