@@ -60,16 +60,6 @@ Run `python generate_glb.py --help` for the full list of flags (sampler steps, C
 <!-- Updates -->
 ## ⏩ Updates
 
-**03/25/2025**
-- Release training code.
-- Release **TRELLIS-text** models and asset variants generation.
-  - Examples are provided as [example_text.py](example_text.py) and [example_variant.py](example_variant.py).
-  - Gradio demo is provided as [app_text.py](app_text.py).
-  - *Note: It is always recommended to do text to 3D generation by first generating images using text-to-image models and then using TRELLIS-image models for 3D generation. Text-conditioned models are less creative and detailed due to data limitations.*
-
-**12/26/2024**
-- Release [**TRELLIS-500K**](https://github.com/microsoft/TRELLIS#-dataset) dataset and toolkits for data preparation.
-
 **12/18/2024**
 - Implementation of multi-image conditioning for **TRELLIS-image** model. ([#7](https://github.com/microsoft/TRELLIS/issues/7)). This is based on tuning-free algorithm without training a specialized model, so it may not give the best results for all input images.
 - Add Gaussian export in `app.py` and `example.py`. ([#40](https://github.com/microsoft/TRELLIS/issues/40))
@@ -155,7 +145,7 @@ TrellisImageTo3DPipeline.from_pretrained("/path/to/TRELLIS-image-large")
 
 ### Minimal Example
 
-Here is an [example](example.py) of how to use the pretrained models for 3D asset generation.
+Here is an example of how to use the pretrained models for 3D asset generation.
 
 ```python
 import os
@@ -174,7 +164,7 @@ pipeline = TrellisImageTo3DPipeline.from_pretrained("microsoft/TRELLIS-image-lar
 pipeline.cuda()
 
 # Load an image
-image = Image.open("assets/example_image/T.png")
+image = Image.open("input/screw_A/screw_A-002.png")
 
 # Run the pipeline
 outputs = pipeline.run(
@@ -238,130 +228,6 @@ python app.py
 ```
 
 Then, you can access the demo at the address shown in the terminal.
-
-
-<!-- Dataset -->
-## 📚 Dataset
-
-We provide **TRELLIS-500K**, a large-scale dataset containing 500K 3D assets curated from [Objaverse(XL)](https://objaverse.allenai.org/), [ABO](https://amazon-berkeley-objects.s3.amazonaws.com/index.html), [3D-FUTURE](https://tianchi.aliyun.com/specials/promotion/alibaba-3d-future), [HSSD](https://huggingface.co/datasets/hssd/hssd-models), and [Toys4k](https://github.com/rehg-lab/lowshot-shapebias/tree/main/toys4k), filtered based on aesthetic scores. Please refer to the [dataset README](DATASET.md) for more details.
-
-
-<!-- Training -->
-## 🏋️‍♂️ Training
-
-TRELLIS’s training framework is organized to provide a flexible and modular approach to building and fine-tuning large-scale 3D generation models. The training code is centered around `train.py` and is structured into several directories to clearly separate dataset handling, model components, training logic, and visualization utilities.
-
-### Code Structure
-
-- **train.py**: Main entry point for training.
-- **trellis/datasets**: Dataset loading and preprocessing.
-- **trellis/models**: Different models and their components.
-- **trellis/modules**: Custom modules for various models.
-- **trellis/pipelines**: Inference pipelines for different models.
-- **trellis/renderers**: Renderers for different 3D representations.
-- **trellis/representations**: Different 3D representations.
-- **trellis/trainers**: Training logic for different models.
-- **trellis/utils**: Utility functions for training and visualization.
-
-### Training Setup
-
-1. **Prepare the Environment:**
-   - Ensure all training dependencies are installed.
-   - Use a Linux system with an NVIDIA GPU (The models are trained on NVIDIA A100 GPUs).
-   - For distributed training, verify that your nodes can communicate through the designated master address and port.
-
-2. **Dataset Preparation:**
-   - Organize your dataset similar to TRELLIS-500K. Specify your dataset path using the `--data_dir` argument when launching training.
-
-3. **Configuration Files:**
-   - Training hyperparameters and model architectures are defined in configuration files under the `configs/` directory.
-   - Example configuration files include:
-
-| Config | Pretained Model | Description |
-| --- | --- | --- |
-| [`vae/ss_vae_conv3d_16l8_fp16.json`](configs/vae/ss_vae_conv3d_16l8_fp16.json) | [Encoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/ss_enc_conv3d_16l8_fp16.safetensors) [Decoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/ss_dec_conv3d_16l8_fp16.safetensors) | Sparse structure VAE |
-| [`vae/slat_vae_enc_dec_gs_swin8_B_64l8_fp16.json`](configs/vae/slat_vae_enc_dec_gs_swin8_B_64l8_fp16.json) | [Encoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/slat_enc_swin8_B_64l8_fp16.safetensors) [Decoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/slat_dec_gs_swin8_B_64l8gs32_fp16.safetensors) | SLat VAE with Gaussian Decoder |
-| [`vae/slat_vae_dec_rf_swin8_B_64l8_fp16.json`](configs/vae/slat_vae_dec_rf_swin8_B_64l8_fp16.json) | [Decoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/slat_dec_rf_swin8_B_64l8r16_fp16.safetensors) | SLat Radiance Field Decoder |
-| [`vae/slat_vae_dec_mesh_swin8_B_64l8_fp16.json`](configs/vae/slat_vae_dec_mesh_swin8_B_64l8_fp16.json) | [Decoder](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/slat_dec_mesh_swin8_B_64l8m256c_fp16.safetensors) | SLat Mesh Decoder |
-| [`generation/ss_flow_img_dit_L_16l8_fp16.json`](configs/generation/ss_flow_img_dit_L_16l8_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/ss_flow_img_dit_L_16l8_fp16.safetensors) | Image conditioned sparse structure Flow Model |
-| [`generation/slat_flow_img_dit_L_64l8p2_fp16.json`](configs/generation/slat_flow_img_dit_L_64l8p2_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-image-large/blob/main/ckpts/slat_flow_img_dit_L_64l8p2_fp16.safetensors) | Image conditioned SLat Flow Model |
-| [`generation/ss_flow_txt_dit_B_16l8_fp16.json`](configs/generation/ss_flow_txt_dit_B_16l8_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-base/blob/main/ckpts/ss_flow_txt_dit_B_16l8_fp16.safetensors) | Base text-conditioned sparse structure Flow Model |
-| [`generation/slat_flow_txt_dit_B_64l8p2_fp16.json`](configs/generation/slat_flow_txt_dit_B_64l8p2_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-base/blob/main/ckpts/slat_flow_txt_dit_B_64l8p2_fp16.safetensors) | Base text-conditioned SLat Flow Model |
-| [`generation/ss_flow_txt_dit_L_16l8_fp16.json`](configs/generation/ss_flow_txt_dit_L_16l8_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-large/blob/main/ckpts/ss_flow_txt_dit_L_16l8_fp16.safetensors) | Large text-conditioned sparse structure Flow Model |
-| [`generation/slat_flow_txt_dit_L_64l8p2_fp16.json`](configs/generation/slat_flow_txt_dit_L_64l8p2_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-large/blob/main/ckpts/slat_flow_txt_dit_L_64l8p2_fp16.safetensors) | Large text-conditioned SLat Flow Model |
-| [`generation/ss_flow_txt_dit_XL_16l8_fp16.json`](configs/generation/ss_flow_txt_dit_XL_16l8_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-xlarge/blob/main/ckpts/ss_flow_txt_dit_XL_16l8_fp16.safetensors) | Extra-large text-conditioned sparse structure Flow Model |
-| [`generation/slat_flow_txt_dit_XL_64l8p2_fp16.json`](configs/generation/slat_flow_txt_dit_XL_64l8p2_fp16.json) | [Denoiser](https://huggingface.co/microsoft/TRELLIS-text-xlarge/blob/main/ckpts/slat_flow_txt_dit_XL_64l8p2_fp16.safetensors) | Extra-large text-conditioned SLat Flow Model |
-
-### Command-Line Options
-
-The training script can be run as follows:
-```sh
-usage: train.py [-h] --config CONFIG --output_dir OUTPUT_DIR [--load_dir LOAD_DIR] [--ckpt CKPT] [--data_dir DATA_DIR] [--auto_retry AUTO_RETRY] [--tryrun] [--profile] [--num_nodes NUM_NODES] [--node_rank NODE_RANK] [--num_gpus NUM_GPUS] [--master_addr MASTER_ADDR] [--master_port MASTER_PORT]
-
-options:
-  -h, --help                    show this help message and exit
-  --config CONFIG               Experiment config file
-  --output_dir OUTPUT_DIR       Output directory
-  --load_dir LOAD_DIR           Load directory, default to output_dir
-  --ckpt CKPT                   Checkpoint step to resume training, default to latest
-  --data_dir DATA_DIR           Data directory
-  --auto_retry AUTO_RETRY       Number of retries on error
-  --tryrun                      Try run without training
-  --profile                     Profile training
-  --num_nodes NUM_NODES         Number of nodes
-  --node_rank NODE_RANK         Node rank
-  --num_gpus NUM_GPUS           Number of GPUs per node, default to all
-  --master_addr MASTER_ADDR     Master address for distributed training
-  --master_port MASTER_PORT     Port for distributed training
-```
-
-### Example Training Commands
-
-#### Single-node Training
-
-To train a image-to-3D stage 2 model with a single machine.
-```sh
-python train.py \
-  --config configs/vae/slat_vae_dec_mesh_swin8_B_64l8_fp16.json \
-  --output_dir outputs/slat_vae_dec_mesh_swin8_B_64l8_fp16_1node \
-  --data_dir /path/to/your/dataset1,/path/to/your/dataset2 \
-```
-The script will automatically distribute the training across all available GPUs. Specify the number of GPUs with the `--num_gpus` flag if you want to limit the number of GPUs used.
-
-#### Multi-node Training
-
-To train a image-to-3D stage 2 model with multiple GPUs across nodes (e.g., 2 nodes):
-```sh
-python train.py \
-  --config configs/generation/slat_flow_img_dit_L_64l8p2_fp16.json \
-  --output_dir outputs/slat_flow_img_dit_L_64l8p2_fp16_2nodes \
-  --data_dir /path/to/your/dataset1,/path/to/your/dataset2 \
-  --num_nodes 2 \
-  --node_rank 0 \
-  --master_addr $MASTER_ADDR \
-  --master_port $MASTER_PORT
-```
-Be sure to adjust `node_rank`, `master_addr`, and `master_port` for each node accordingly.
-
-#### Resuming Training
-
-By default, training will resume from the latest saved checkpoint in the same output directory. To specify a specific checkpoint to resume from, use the `--load_dir` and `--ckpt` flags:
-```sh
-python train.py \
-  --config configs/generation/slat_flow_img_dit_L_64l8p2_fp16.json \
-  --output_dir outputs/slat_flow_img_dit_L_64l8p2_fp16_resume \
-  --data_dir /path/to/your/dataset1,/path/to/your/dataset2 \
-  --load_dir /path/to/your/checkpoint \
-  --ckpt [step]
-```
-
-### Additional Options
-
-- **Auto Retry:** Use the `--auto_retry` flag to specify the number of retries in case of intermittent errors.
-- **Dry Run:** The `--tryrun` flag allows you to check your configuration and environment without launching full training.
-- **Profiling:** Enable profiling with the `--profile` flag to gain insights into training performance and diagnose bottlenecks.
-
-Adjust the file paths and parameters to match your experimental setup.
 
 
 <!-- License -->
