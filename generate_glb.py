@@ -1,7 +1,7 @@
-"""CLI: generate a textured GLB from a folder of multi-view images.
+"""CLI: generate a textured 3D model from a folder of multi-view images.
 
 Usage:
-    python generate_glb.py <input_folder> [-o output.glb] [--seed 1] [--texture-size 1024]
+    python generate_glb.py <input_folder> [-o output.glb] [--format glb|obj] [--seed 1] [--texture-size 1024]
 """
 
 import argparse
@@ -33,7 +33,13 @@ def load_images(folder: Path) -> list[Image.Image]:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_folder", type=Path, help="Folder of multi-view images")
-    parser.add_argument("-o", "--output", type=Path, default=None, help="Output .glb path")
+    parser.add_argument("-o", "--output", type=Path, default=None, help="Output model path")
+    parser.add_argument(
+        "--format",
+        choices=["glb", "obj"],
+        default="glb",
+        help="Output mesh format (default: glb). Ignored if -o has an explicit extension.",
+    )
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--ss-steps", type=int, default=12)
     parser.add_argument("--ss-cfg", type=float, default=7.5)
@@ -50,8 +56,17 @@ def main():
     args = parser.parse_args()
 
     images = load_images(args.input_folder)
-    out_path = args.output or args.input_folder.parent / f"{args.input_folder.name}.glb"
-    out_path = Path(out_path)
+
+    # An explicit extension on -o wins over --format; otherwise use --format.
+    fmt = args.format
+    if args.output is not None:
+        out_path = Path(args.output)
+        if out_path.suffix.lower() in (".glb", ".obj"):
+            fmt = out_path.suffix.lower().lstrip(".")
+        else:
+            out_path = out_path.with_suffix(f".{fmt}")
+    else:
+        out_path = args.input_folder.parent / f"{args.input_folder.name}.{fmt}"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     print("Loading TRELLIS-image-large pipeline from models_weights/...")
@@ -82,11 +97,13 @@ def main():
         frames = [np.concatenate([c, n], axis=1) for c, n in zip(color, normal)]
         imageio.mimsave(str(preview_path), frames, fps=15)
 
-    print(f"Extracting textured GLB (texture_size={args.texture_size})...")
-    glb = postprocessing_utils.to_glb(
+    print(f"Extracting textured mesh (format={fmt}, texture_size={args.texture_size})...")
+    model = postprocessing_utils.to_glb(
         gs, mesh, simplify=args.simplify, texture_size=args.texture_size, verbose=False
     )
-    glb.export(str(out_path))
+    # trimesh picks the writer from the extension: .glb → binary glTF (embedded
+    # texture), .obj → .obj + .mtl + texture .png alongside it.
+    model.export(str(out_path), file_type=fmt)
     print(f"Done → {out_path}")
 
 

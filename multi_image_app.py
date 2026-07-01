@@ -141,18 +141,23 @@ def generate(
     return state, video_path
 
 
-def extract_glb(state: dict, simplify: float, texture_size: int, req: gr.Request):
+def extract_glb(
+    state: dict, simplify: float, texture_size: int, file_format: str, req: gr.Request
+):
     if state is None:
         raise gr.Error("Generate a 3D preview first.")
+    fmt = (file_format or "glb").lower()
     user_dir = session_dir(req)
     gs, mesh = unpack_state(state)
-    glb = postprocessing_utils.to_glb(
+    model = postprocessing_utils.to_glb(
         gs, mesh, simplify=float(simplify), texture_size=int(texture_size), verbose=False
     )
-    glb_path = os.path.join(user_dir, "model.glb")
-    glb.export(glb_path)
+    # trimesh picks the writer from the extension: .glb → single binary glTF with
+    # embedded texture; .obj → .obj + .mtl + texture .png in the same folder.
+    model_path = os.path.join(user_dir, f"model.{fmt}")
+    model.export(model_path, file_type=fmt)
     torch.cuda.empty_cache()
-    return glb_path, glb_path
+    return model_path, model_path
 
 
 def example_sets() -> List[List[str]]:
@@ -225,6 +230,12 @@ with gr.Blocks(
                 texture_size = gr.Slider(
                     512, 2048, label="Texture Resolution", value=1024, step=512
                 )
+                output_format = gr.Radio(
+                    ["glb", "obj"],
+                    label="Output Format",
+                    value="glb",
+                    info="glb = single self-contained file; obj = .obj + .mtl + texture .png",
+                )
 
             with gr.Row():
                 generate_btn = gr.Button("Generate 3D", variant="primary")
@@ -275,10 +286,11 @@ with gr.Blocks(
 
     extract_btn.click(
         extract_glb,
-        inputs=[state_buf, mesh_simplify, texture_size],
+        inputs=[state_buf, mesh_simplify, texture_size, output_format],
         outputs=[model_output, glb_download],
     ).then(
-        lambda: gr.DownloadButton(interactive=True),
+        lambda fmt: gr.DownloadButton(label=f"Download .{fmt}", interactive=True),
+        inputs=[output_format],
         outputs=[glb_download],
     )
 

@@ -185,26 +185,31 @@ def extract_glb(
     state: dict,
     mesh_simplify: float,
     texture_size: int,
+    file_format: str,
     req: gr.Request,
 ) -> Tuple[str, str]:
     """
-    Extract a GLB file from the 3D model.
+    Extract a textured mesh file (GLB or OBJ) from the 3D model.
 
     Args:
         state (dict): The state of the generated 3D model.
         mesh_simplify (float): The mesh simplification factor.
         texture_size (int): The texture resolution.
+        file_format (str): Output mesh format, "glb" or "obj".
 
     Returns:
-        str: The path to the extracted GLB file.
+        str: The path to the extracted mesh file.
     """
+    fmt = (file_format or 'glb').lower()
     user_dir = os.path.join(TMP_DIR, str(req.session_hash))
     gs, mesh = unpack_state(state)
-    glb = postprocessing_utils.to_glb(gs, mesh, simplify=mesh_simplify, texture_size=texture_size, verbose=False)
-    glb_path = os.path.join(user_dir, 'sample.glb')
-    glb.export(glb_path)
+    model = postprocessing_utils.to_glb(gs, mesh, simplify=mesh_simplify, texture_size=texture_size, verbose=False)
+    # trimesh picks the writer from the extension: .glb → single binary glTF with
+    # embedded texture; .obj → .obj + .mtl + texture .png in the same folder.
+    model_path = os.path.join(user_dir, f'sample.{fmt}')
+    model.export(model_path, file_type=fmt)
     torch.cuda.empty_cache()
-    return glb_path, glb_path
+    return model_path, model_path
 
 
 def extract_gaussian(state: dict, req: gr.Request) -> Tuple[str, str]:
@@ -292,6 +297,7 @@ with gr.Blocks(delete_cache=(600, 600)) as demo:
             with gr.Accordion(label="GLB Extraction Settings", open=False):
                 mesh_simplify = gr.Slider(0.9, 0.98, label="Simplify", value=0.95, step=0.01)
                 texture_size = gr.Slider(512, 2048, label="Texture Size", value=1024, step=512)
+                output_format = gr.Radio(["glb", "obj"], label="Output Format", value="glb", info="glb = single file; obj = .obj + .mtl + texture .png")
             
             with gr.Row():
                 extract_glb_btn = gr.Button("Extract GLB", interactive=False)
@@ -378,10 +384,11 @@ with gr.Blocks(delete_cache=(600, 600)) as demo:
 
     extract_glb_btn.click(
         extract_glb,
-        inputs=[output_buf, mesh_simplify, texture_size],
+        inputs=[output_buf, mesh_simplify, texture_size, output_format],
         outputs=[model_output, download_glb],
     ).then(
-        lambda: gr.Button(interactive=True),
+        lambda fmt: gr.Button(label=f"Download {fmt.upper()}", interactive=True),
+        inputs=[output_format],
         outputs=[download_glb],
     )
     

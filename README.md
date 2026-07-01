@@ -1,6 +1,11 @@
 ## How to run
 
-Activate the local virtualenv before running anything:
+> **Docker (recommended, GPU):** build once and launch the Gradio demo with
+> `docker compose up --build`, then open `http://localhost:7860`. This bundles a
+> Blackwell/RTX 50-series–capable CUDA 12.8 stack. Download the weights first (see
+> below) — they are mounted at run time. Details in [docker/README.md](docker/README.md).
+
+To run outside Docker, activate the local virtualenv before running anything:
 
 ```sh
 source .venv/bin/activate

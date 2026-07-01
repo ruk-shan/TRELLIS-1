@@ -1,0 +1,35 @@
+# TRELLIS — Docker Compose entry point.
+#
+#   docker compose up --build          # build + run the single-image Gradio demo
+#   docker compose up                  # run (reuses the built image)
+#
+# Then open http://localhost:7860.
+#
+# Requires: NVIDIA Container Toolkit + a Blackwell-capable driver, and the
+# TRELLIS-image-large weights downloaded to ./models_weights (PRIVATE data —
+# kept on a host bind mount, never baked into the image). See docker/README.md.
+services:
+  trellis:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: trellis:cu128
+    ports:
+      - "7860:7860"
+    volumes:
+      # PRIVATE data — host-local bind mounts, not baked into the image.
+      - ./models_weights:/workspace/models_weights
+      - ./input:/workspace/input
+      - ./output:/workspace/output
+    # GPU access for `docker compose up` (honored without swarm).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Default command runs the single-image Gradio demo (app.py). Override for
+    # the multi-image demo, e.g.:
+    #   docker compose run --rm --service-ports trellis python multi_image_app.py
+    command: ["python", "app.py"]
