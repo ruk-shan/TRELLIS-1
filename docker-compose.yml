@@ -29,7 +29,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # Default command runs the single-image Gradio demo (app.py). Override for
-    # the multi-image demo, e.g.:
-    #   docker compose run --rm --service-ports trellis python multi_image_app.py
+    # Runs the Gradio demo (app.py) — handles both single-image and multi-image
+    # (multi-view) input via tabs. Override for a one-off CLI run, e.g.:
+    #   docker compose run --rm trellis python generate_glb.py input/screw_A -o output/screw_A.glb
     command: ["python", "app.py"]

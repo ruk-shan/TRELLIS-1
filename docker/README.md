@@ -37,10 +37,9 @@ Open `http://localhost:7860`. Stop with `Ctrl-C`, or `docker compose down` to re
 the container. Compose (see [../docker-compose.yml](../docker-compose.yml)) wires up the
 GPU, publishes port 7860, and bind-mounts `models_weights/`, `input/`, and `output/`.
 
-Run the multi-image demo or a one-off CLI command through the same service:
+Run a one-off CLI command through the same service:
 
 ```sh
-docker compose run --rm --service-ports trellis python multi_image_app.py
 docker compose run --rm trellis python generate_glb.py input/screw_A -o output/screw_A.glb
 ```
 
@@ -78,7 +77,9 @@ weights are supplied via a runtime mount (they are not in the image). `HF_HUB_OF
 and `TRANSFORMERS_OFFLINE=1` are set so any accidental network call fails fast instead
 of hanging. Mount `models_weights` on every run.
 
-### Single-image Gradio demo (default `CMD`)
+### Gradio demo (default `CMD`)
+
+The `app.py` demo handles both single-image and multi-image (multi-view) input via tabs.
 
 ```sh
 docker run --rm --gpus all -p 7860:7860 \
@@ -90,18 +91,7 @@ docker run --rm --gpus all -p 7860:7860 \
 
 Open `http://localhost:7860`.
 
-### Multi-image Gradio demo
-
-```sh
-docker run --rm --gpus all -p 7860:7860 \
-  -v $PWD/models_weights:/workspace/models_weights \
-  -v $PWD/input:/workspace/input \
-  -v $PWD/output:/workspace/output \
-  trellis:cu128 \
-  python multi_image_app.py
-```
-
-### CLI: folder of multi-view images → textured GLB
+### CLI: folder of multi-view images → textured GLB/OBJ
 
 ```sh
 docker run --rm --gpus all \

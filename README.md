@@ -13,25 +13,15 @@ source .venv/bin/activate
 
 Model weights are expected at [models_weights/TRELLIS-image-large/](models_weights/TRELLIS-image-large/). All entry points use the `xformers` attention backend and the `native` spconv algorithm (set automatically inside each script).
 
-### Web demos (Gradio)
+### Web demo (Gradio)
 
-- Multi-image → uv run multi_image_app.py
-- Single-image → 3D: `python app.py` — see [app.py](app.py)
+- `python app.py` — see [app.py](app.py). The demo handles both **single-image** and **multi-image** (multi-view) input via tabs, and can export the result as **GLB or OBJ**.
 
+Open the URL printed in the terminal (or `http://localhost:7860`).
 
+### CLI: folder of multi-view images → textured GLB/OBJ
 
-[multi_image_app.py](multi_image_app.py)
-
-Open the URL printed in the terminal.
-
-### Scripts
-
-- Minimal single-image example: `python example.py` — see [example.py](example.py)
-- Minimal multi-image example: `python example_multi_image.py` — see [example_multi_image.py](example_multi_image.py)
-
-### CLI: folder of multi-view images → textured GLB
-
-[generate_glb.py](generate_glb.py) takes a folder of images of one object and writes a `.glb` next to it.
+[generate_glb.py](generate_glb.py) takes a folder of images of one object and writes a `.glb` (or `.obj`) next to it.
 
 ```sh
 python generate_glb.py input/screw_A

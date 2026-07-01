@@ -230,35 +230,6 @@ def extract_gaussian(state: dict, req: gr.Request) -> Tuple[str, str]:
     return gaussian_path, gaussian_path
 
 
-def prepare_multi_example() -> List[Image.Image]:
-    multi_case = list(set([i.split('_')[0] for i in os.listdir("assets/example_multi_image")]))
-    images = []
-    for case in multi_case:
-        _images = []
-        for i in range(1, 4):
-            img = Image.open(f'assets/example_multi_image/{case}_{i}.png')
-            W, H = img.size
-            img = img.resize((int(W / H * 512), 512))
-            _images.append(np.array(img))
-        images.append(Image.fromarray(np.concatenate(_images, axis=1)))
-    return images
-
-
-def split_image(image: Image.Image) -> List[Image.Image]:
-    """
-    Split an image into multiple views.
-    """
-    image = np.array(image)
-    alpha = image[..., 3]
-    alpha = np.any(alpha>0, axis=0)
-    start_pos = np.where(~alpha[:-1] & alpha[1:])[0].tolist()
-    end_pos = np.where(alpha[:-1] & ~alpha[1:])[0].tolist()
-    images = []
-    for s, e in zip(start_pos, end_pos):
-        images.append(Image.fromarray(image[:, s:e+1]))
-    return [preprocess_image(image) for image in images]
-
-
 with gr.Blocks(delete_cache=(600, 600)) as demo:
     gr.Markdown("""
     ## Image to 3D Asset with [TRELLIS](https://trellis3d.github.io/)
@@ -317,42 +288,19 @@ with gr.Blocks(delete_cache=(600, 600)) as demo:
     is_multiimage = gr.State(False)
     output_buf = gr.State()
 
-    # Example images at the bottom of the page
-    with gr.Row() as single_image_example:
-        examples = gr.Examples(
-            examples=[
-                f'assets/example_image/{image}'
-                for image in os.listdir("assets/example_image")
-            ],
-            inputs=[image_prompt],
-            fn=preprocess_image,
-            outputs=[image_prompt],
-            run_on_click=True,
-            examples_per_page=64,
-        )
-    with gr.Row(visible=False) as multiimage_example:
-        examples_multi = gr.Examples(
-            examples=prepare_multi_example(),
-            inputs=[image_prompt],
-            fn=split_image,
-            outputs=[multiimage_prompt],
-            run_on_click=True,
-            examples_per_page=8,
-        )
-
     # Handlers
     demo.load(start_session)
     demo.unload(end_session)
-    
+
     single_image_input_tab.select(
-        lambda: tuple([False, gr.Row.update(visible=True), gr.Row.update(visible=False)]),
-        outputs=[is_multiimage, single_image_example, multiimage_example]
+        lambda: False,
+        outputs=[is_multiimage]
     )
     multiimage_input_tab.select(
-        lambda: tuple([True, gr.Row.update(visible=False), gr.Row.update(visible=True)]),
-        outputs=[is_multiimage, single_image_example, multiimage_example]
+        lambda: True,
+        outputs=[is_multiimage]
     )
-    
+
     image_prompt.upload(
         preprocess_image,
         inputs=[image_prompt],
