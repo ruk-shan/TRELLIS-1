@@ -2,18 +2,6 @@
 
 A slimmed, inference-only fork of [microsoft/TRELLIS](https://github.com/microsoft/TRELLIS) for turning images of an object into a textured 3D model. Generate from a single image or several views, preview it, and export as **GLB** or **OBJ**.
 
-## Clone
-
-This repo uses a git submodule ([FlexiCubes](https://github.com/MaxtirError/FlexiCubes), used for mesh extraction), so clone with `--recurse-submodules`:
-
-```sh
-git clone --recurse-submodules <repo-url>
-# already cloned without it? run:
-git submodule update --init --recursive
-```
-
-Without the submodule, `trellis/representations/mesh/flexicubes/` is empty and mesh extraction fails.
-
 ## Requirements
 
 - NVIDIA GPU (≥16 GB memory recommended)
@@ -73,7 +61,7 @@ Run `python generate_glb.py --help` for the full flag list.
 
 ## Credits & license
 
-Based on **TRELLIS: Structured 3D Latents for Scalable and Versatile 3D Generation** ([paper](https://arxiv.org/abs/2412.01506), [project page](https://microsoft.github.io/TRELLIS/)). Code is licensed under the [MIT License](LICENSE); some submodules carry their own licenses.
+Based on **TRELLIS: Structured 3D Latents for Scalable and Versatile 3D Generation** ([paper](https://arxiv.org/abs/2412.01506), [project page](https://microsoft.github.io/TRELLIS/)). Code is licensed under the [MIT License](LICENSE). Mesh extraction uses [FlexiCubes](https://github.com/MaxtirError/FlexiCubes), vendored under `trellis/representations/mesh/flexicubes/` with its own [LICENSE.txt](trellis/representations/mesh/flexicubes/LICENSE.txt).
 
 ```bibtex
 @article{xiang2024structured,
