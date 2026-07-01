@@ -285,6 +285,14 @@ with gr.Blocks(delete_cache=(600, 600)) as demo:
                 download_glb = gr.DownloadButton(label="Download GLB", interactive=False)
                 download_gs = gr.DownloadButton(label="Download Gaussian", interactive=False)  
     
+    gr.Markdown(
+        """
+        ---
+        **Credits** — Adapted & maintained by **Rukshan H** · [ruk-shan.com](https://ruk-shan.com) · <ruk.shan@outlook.com><br>
+        Built on [TRELLIS](https://github.com/microsoft/TRELLIS) (MIT) · mesh extraction by [FlexiCubes](https://github.com/MaxtirError/FlexiCubes) (Apache-2.0).
+        """
+    )
+
     is_multiimage = gr.State(False)
     output_buf = gr.State()
 

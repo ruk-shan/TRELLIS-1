@@ -61,6 +61,8 @@ Run `python generate_glb.py --help` for the full flag list.
 
 ## Credits & license
 
+Adapted & maintained by **Rukshan H** — [ruk-shan.com](https://ruk-shan.com) · ruk.shan@outlook.com
+
 Based on **TRELLIS: Structured 3D Latents for Scalable and Versatile 3D Generation** ([paper](https://arxiv.org/abs/2412.01506), [project page](https://microsoft.github.io/TRELLIS/)). Code is licensed under the [MIT License](LICENSE). Mesh extraction uses [FlexiCubes](https://github.com/MaxtirError/FlexiCubes), vendored under `trellis/representations/mesh/flexicubes/` with its own [LICENSE.txt](trellis/representations/mesh/flexicubes/LICENSE.txt).
 
 ```bibtex
