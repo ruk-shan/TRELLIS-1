@@ -2,6 +2,18 @@
 
 A slimmed, inference-only fork of [microsoft/TRELLIS](https://github.com/microsoft/TRELLIS) for turning images of an object into a textured 3D model. Generate from a single image or several views, preview it, and export as **GLB** or **OBJ**.
 
+## Clone
+
+This repo uses a git submodule ([FlexiCubes](https://github.com/MaxtirError/FlexiCubes), used for mesh extraction), so clone with `--recurse-submodules`:
+
+```sh
+git clone --recurse-submodules <repo-url>
+# already cloned without it? run:
+git submodule update --init --recursive
+```
+
+Without the submodule, `trellis/representations/mesh/flexicubes/` is empty and mesh extraction fails.
+
 ## Requirements
 
 - NVIDIA GPU (≥16 GB memory recommended)
